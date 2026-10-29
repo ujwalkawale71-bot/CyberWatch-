@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CYBERWATCH
 
 Unified Web & Browser Threat Detection Platform
@@ -78,3 +79,7 @@ npm run lint
 - Phase 3: AI Threat Analysis (Future)
 - Phase 4: Browser Extension (Future)
 - Phase 5: Dashboard and Reporting (Future)
+=======
+# CyberWatch-
+A Unified web and threat detection platform
+>>>>>>> ce7abf52d64b7952727132a26e3a2bf109ec33cd
