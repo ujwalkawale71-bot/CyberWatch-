@@ -1,0 +1,14 @@
+{
+  "name": "@cyberwatch/shared",
+  "version": "1.0.0",
+  "description": "CyberWatch Shared Types and Utilities",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

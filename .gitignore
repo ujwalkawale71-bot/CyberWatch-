@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+.env
+coverage
+__pycache__
+*.pyc
+venv
+.venv
+.idea
+.vscode
+*.log
+apps/extension/dist

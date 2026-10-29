@@ -1,0 +1,279 @@
+// ===============================
+// AI Travel Platform JavaScript
+// ===============================
+
+// Hero Slider
+const slides = document.querySelectorAll(".slide");
+let currentSlide = 0;
+
+function showSlide(index) {
+  slides.forEach((slide) => slide.classList.remove("active"));
+  slides[index].classList.add("active");
+}
+
+setInterval(() => {
+  currentSlide++;
+
+  if (currentSlide >= slides.length) {
+    currentSlide = 0;
+  }
+
+  showSlide(currentSlide);
+}, 4000);
+
+// Login Popup
+const openLogin = document.getElementById("openLogin");
+const closeLogin = document.getElementById("closeLogin");
+const loginPopup = document.getElementById("loginPopup");
+
+openLogin.addEventListener("click", () => {
+  loginPopup.style.display = "flex";
+});
+
+closeLogin.addEventListener("click", () => {
+  loginPopup.style.display = "none";
+});
+
+window.addEventListener("click", (e) => {
+  if (e.target === loginPopup) {
+    loginPopup.style.display = "none";
+  }
+});
+
+// Search
+const searchBtn = document.querySelector(".search-box .btn");
+const searchInput = document.querySelector(".search-box input");
+
+searchBtn.addEventListener("click", () => {
+  const value = searchInput.value.trim();
+
+  if (value === "") {
+    alert("Please enter destination, hotel or package.");
+  } else {
+    alert("Searching for: " + value);
+  }
+});
+
+// Booking Buttons
+const bookButtons = document.querySelectorAll(".package-card .btn");
+
+bookButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    alert("Package booked successfully!");
+  });
+});
+
+// Contact Form
+const contactForm = document.querySelector(".contact-form");
+
+contactForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  alert("Message sent successfully!");
+  contactForm.reset();
+});
+
+// Navbar Background On Scroll
+window.addEventListener("scroll", () => {
+  const navbar = document.querySelector(".navbar");
+
+  if (window.scrollY > 50) {
+    navbar.style.background = "rgba(0,0,0,0.75)";
+  } else {
+    navbar.style.background = "rgba(0,0,0,0.45)";
+  }
+});
+
+// Smooth Scroll Active Links
+const navLinks = document.querySelectorAll(".nav-links a");
+
+navLinks.forEach((link) => {
+  link.addEventListener("click", function () {
+    navLinks.forEach((item) => item.classList.remove("active-link"));
+    this.classList.add("active-link");
+  });
+});
+
+// Simple Fade In Animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = "1";
+      entry.target.style.transform = "translateY(0)";
+    }
+  });
+});
+
+document.querySelectorAll(".card, .feature-card, .package-card, .review-card").forEach((el) => {
+  el.style.opacity = "0";
+  el.style.transform = "translateY(40px)";
+  el.style.transition = "0.8s ease";
+  observer.observe(el);
+});
+
+// COUNTING ANIMATION FOR REVIEW STATS
+
+const counters = document.querySelectorAll(".stat-box h3");
+
+const runCounter = (counter) => {
+  const text = counter.innerText.trim();
+
+  let target = 0;
+  let suffix = "";
+
+  if (text.includes("50K+")) {
+    target = 50000;
+    suffix = "K+";
+  } 
+  else if (text.includes("4.9")) {
+    target = 49; // later divide by 10
+    suffix = "★";
+  } 
+  else if (text.includes("15K+")) {
+    target = 15000;
+    suffix = "K+";
+  } 
+  else if (text.includes("99")) {
+    target = 99;
+    suffix = "%";
+  }
+
+  let count = 0;
+  const speed = target / 120;
+
+  const update = () => {
+    count += speed;
+
+    if (count < target) {
+
+      if (suffix === "★") {
+        counter.innerText = (count / 10).toFixed(1) + "★";
+      } 
+      else if (suffix === "K+") {
+        counter.innerText = Math.floor(count / 1000) + "K+";
+      } 
+      else {
+        counter.innerText = Math.floor(count) + "%";
+      }
+
+      requestAnimationFrame(update);
+
+    } else {
+
+      if (suffix === "★") {
+        counter.innerText = "4.9★";
+      } 
+      else if (target === 50000) {
+        counter.innerText = "50K+";
+      } 
+      else if (target === 15000) {
+        counter.innerText = "15K+";
+      } 
+      else {
+        counter.innerText = "99%";
+      }
+
+    }
+  };
+
+  update();
+};
+
+// Run When Visible
+const statObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      runCounter(entry.target.querySelector("h3"));
+      statObserver.unobserve(entry.target);
+    }
+  });
+});
+
+document.querySelectorAll(".stat-box").forEach((box) => {
+  statObserver.observe(box);
+});
+// Toast Notification
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.style.display = "block";
+
+  setTimeout(()=>{
+    toast.style.display = "none";
+  },3000);
+}
+
+// Chatbot demo
+function openChat(){
+  alert("AI Chatbot Coming Soon 🚀 (Frontend Demo)");
+}
+// ================= CHATBOT FUNCTION =================
+
+function toggleChat(){
+  const box = document.getElementById("chatbotBox");
+
+  if(box.style.display === "flex"){
+    box.style.display = "none";
+  }else{
+    box.style.display = "flex";
+  }
+}
+
+function sendMsg(){
+  const input = document.getElementById("userInput");
+  const msg = input.value.trim();
+  if(msg === "") return;
+
+  const chatBody = document.getElementById("chatBody");
+
+  // USER MESSAGE
+  chatBody.innerHTML += `<p class="user">${msg}</p>`;
+
+  let reply = getAIResponse(msg.toLowerCase());
+
+  setTimeout(()=>{
+    chatBody.innerHTML += `<p class="bot">${reply}</p>`;
+    chatBody.scrollTop = chatBody.scrollHeight;
+  },500);
+
+  input.value = "";
+}
+
+// ================= AI BRAIN =================
+function getAIResponse(msg){
+
+  // GREETINGS
+  if(msg.includes("hello") || msg.includes("hi")){
+    return "Hello 👋 मैं TravelAI assistant हूँ, कैसे help करूं?";
+  }
+
+  // DESTINATIONS
+  if(msg.includes("goa")){
+    return "Goa best beach destination है 🌴 Nightlife + beaches famous हैं!";
+  }
+
+  if(msg.includes("manali")){
+    return "Manali snow adventure के लिए best place है ❄️";
+  }
+
+  if(msg.includes("kashmir")){
+    return "Kashmir को 'Paradise on Earth' कहा जाता है 🏔️";
+  }
+
+  // BOOKING
+  if(msg.includes("book") || msg.includes("booking")){
+    return "आप packages section से booking कर सकते हैं 🧳";
+  }
+
+  // BUDGET
+  if(msg.includes("budget") || msg.includes("price")){
+    return "₹10k budget → Goa / Rishikesh\n₹20k → Manali / Kerala\n₹30k+ → Kashmir / Andaman";
+  }
+
+  // WEATHER
+  if(msg.includes("weather")){
+    return "Weather check करने के लिए weather feature use करो 🌦️";
+  }
+
+  // DEFAULT
+  return "मुझे समझ नहीं आया 😅 कृपया destinations, budget या booking के बारे में पूछो";
+}

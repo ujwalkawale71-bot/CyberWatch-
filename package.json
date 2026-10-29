@@ -1,0 +1,24 @@
+{
+  "name": "cyberwatch",
+  "version": "1.0.0",
+  "description": "Unified Web & Browser Threat Detection Platform",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=api",
+    "dev:web": "npm run dev --workspace=web",
+    "dev:ai": "cd apps/ai-service && python main.py",
+    "start:api": "npm run start --workspace=api",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3"
+  }
+}

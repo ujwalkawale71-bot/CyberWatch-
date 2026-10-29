@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberWatch Security Scanner</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <img src="assets/icon32.png" alt="CyberWatch Logo" class="brand-icon">
+        <div class="brand-text">
+          <span class="brand-title">CYBERWATCH</span>
+          <span class="brand-subtitle">Threat Detection Platform</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="open-web-btn" class="icon-btn" title="Open Full CyberWatch Website">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span>Web</span>
+        </button>
+        <button id="auth-toggle-btn" class="icon-btn" title="Account / Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span id="auth-badge-status">Sign In</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Health / Network Status Banner (Hidden when OK) -->
+    <div id="status-banner" class="status-banner hidden">
+      <span class="status-dot"></span>
+      <span id="status-banner-text">Connecting to backend...</span>
+    </div>
+
+    <!-- Active Tab Detection Banner -->
+    <div id="active-tab-card" class="active-tab-card">
+      <div class="active-tab-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+      </div>
+      <div class="active-tab-info">
+        <span class="tab-label">Current Page</span>
+        <span id="active-tab-url" class="tab-url">Detecting page...</span>
+      </div>
+      <button id="use-tab-btn" class="btn-xs" title="Paste current URL into target input">Use</button>
+    </div>
+
+    <!-- Scanner Selector Navigation Tabs -->
+    <nav class="scanner-nav">
+      <button class="nav-tab active" data-type="URL" title="URL Security Scanner">
+        <span class="nav-icon">🔗</span>
+        <span class="nav-label">URL</span>
+      </button>
+      <button class="nav-tab" data-type="Website" title="Website Security Scanner">
+        <span class="nav-icon">🌐</span>
+        <span class="nav-label">Website</span>
+      </button>
+      <button class="nav-tab" data-type="API" title="API Security Scanner">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">API</span>
+      </button>
+      <button class="nav-tab" data-type="Phishing" title="Phishing & Deception Scanner">
+        <span class="nav-icon">🎣</span>
+        <span class="nav-label">Phishing</span>
+      </button>
+      <button class="nav-tab" data-type="File" title="File Security Scanner">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">File</span>
+      </button>
+      <button class="nav-tab" data-type="Extension" title="Browser Extension Scanner">
+        <span class="nav-icon">🧩</span>
+        <span class="nav-label">Extension</span>
+      </button>
+    </nav>
+
+    <!-- Main Scanner Input Area -->
+    <main class="main-content">
+      <!-- Standard Input Mode (URL, Website, API, Phishing) -->
+      <section id="scanner-form-section" class="scanner-section">
+        <div class="scanner-header-info">
+          <h2 id="scanner-title">URL Security Scanner</h2>
+          <p id="scanner-desc">Inspect domain DNS, TLS encryption, redirects, and threat reputation.</p>
+        </div>
+
+        <!-- URL / Target Input Group -->
+        <div id="target-input-group" class="input-group">
+          <label for="target-input" id="target-input-label">Target Address</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="target-input"
+              placeholder="https://example.com/login"
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button id="clear-input-btn" class="clear-btn" title="Clear input">&times;</button>
+          </div>
+        </div>
+
+        <!-- File Upload Group (Visible for File Scanner) -->
+        <div id="file-input-group" class="input-group hidden">
+          <label>Select Local File or Archive (Max 25MB)</label>
+          <div id="file-drop-zone" class="file-drop-zone">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span id="file-label-text">Choose file to inspect</span>
+            <span class="file-hint">Executables, binaries, PDFs, scripts, packages</span>
+            <input type="file" id="file-input" class="hidden-file-input">
+          </div>
+          <div id="selected-file-badge" class="selected-file-badge hidden">
+            <span id="selected-file-name">sample.exe</span>
+            <span id="selected-file-size">1.2 MB</span>
+            <button id="remove-file-btn">&times;</button>
+          </div>
+        </div>
+
+        <!-- Extension Raw Manifest Mode (Optional Tab inside Extension Scanner) -->
+        <div id="extension-manifest-group" class="input-group hidden">
+          <label for="manifest-input">Or Paste Extension manifest.json</label>
+          <textarea
+            id="manifest-input"
+            rows="3"
+            placeholder='{ "manifest_version": 3, "name": "My Extension", "permissions": ["storage"] }'
+          ></textarea>
+        </div>
+
+        <!-- Scan Options -->
+        <div class="scan-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="force-rescan-checkbox">
+            <span>Force live rescan (bypass cache)</span>
+          </label>
+        </div>
+
+        <!-- Action Button -->
+        <button id="start-scan-btn" class="btn-primary">
+          <span class="btn-icon">🛡️</span>
+          <span id="scan-btn-text">Start Security Scan</span>
+        </button>
+      </section>
+
+      <!-- Scan Progress & Loader Section -->
+      <section id="scanning-section" class="scanning-section hidden">
+        <div class="radar-spinner">
+          <div class="radar-pulse"></div>
+          <img src="assets/icon48.png" alt="Scanning" class="radar-logo">
+        </div>
+        <h3 id="scanning-step-title">Conducting Security Analysis...</h3>
+        <p id="scanning-step-desc">Querying live backend and threat intelligence engines.</p>
+        <div class="progress-bar-container">
+          <div class="progress-bar-inner"></div>
+        </div>
+      </section>
+
+      <!-- Genuine Results Display Section -->
+      <section id="results-section" class="results-section hidden">
+        <div class="result-header">
+          <div class="result-badge-container">
+            <span id="result-classification-badge" class="classification-badge safe">Safe</span>
+            <span class="result-score-label">Score: <strong id="result-score-val">0</strong>/100</span>
+          </div>
+          <button id="new-scan-btn" class="btn-secondary-sm">New Scan</button>
+        </div>
+
+        <div class="target-summary-box">
+          <div class="summary-target-type" id="result-target-type">URL Scanner</div>
+          <div class="summary-target-text" id="result-target-val">https://example.com</div>
+        </div>
+
+        <!-- Scan Status Alert (Displayed when scan is failed or incomplete) -->
+        <div id="scan-status-alert" class="scan-status-alert hidden">
+          <span class="status-alert-icon">⚠️</span>
+          <div class="status-alert-content">
+            <div id="scan-status-title" class="status-alert-title">Scan Notice</div>
+            <div id="scan-status-desc" class="status-alert-desc">Target details could not be fully verified.</div>
+          </div>
+        </div>
+
+        <!-- Score Meter Bar -->
+        <div class="score-meter-track">
+          <div id="score-meter-fill" class="score-meter-fill" style="width: 0%;"></div>
+        </div>
+
+        <!-- Verified Technical Evidence Grid -->
+        <div id="evidence-container" class="evidence-container">
+          <div class="evidence-header">
+            <h4>Verified Technical Evidence</h4>
+          </div>
+          <div id="evidence-grid" class="evidence-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Findings Summary Box -->
+        <div class="findings-container">
+          <div class="findings-header">
+            <h4>Security Findings (<span id="findings-count">0</span>)</h4>
+          </div>
+          <div id="findings-list" class="findings-list">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Recommendations Box -->
+        <div class="recommendations-container">
+          <h4>Key Recommendations</h4>
+          <ul id="recommendations-list" class="recommendations-list">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+
+        <!-- Action Links -->
+        <div class="result-actions">
+          <button id="view-full-report-btn" class="btn-primary">
+            <span>Open Full Website Report</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Error Section -->
+      <section id="error-section" class="error-section hidden">
+        <div class="error-icon">⚠️</div>
+        <h3 id="error-title">Security Scan Failed</h3>
+        <p id="error-message">Unable to reach the scanning service.</p>
+        <div class="error-actions">
+          <button id="error-retry-btn" class="btn-secondary">Retry</button>
+          <button id="error-login-btn" class="btn-primary hidden">Log In to CyberWatch</button>
+        </div>
+      </section>
+
+      <!-- Auth & Configuration Drawer -->
+      <div id="auth-drawer" class="drawer hidden">
+        <div class="drawer-header">
+          <h3>CyberWatch Account</h3>
+          <button id="drawer-close-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="drawer-content">
+          <!-- When Logged In -->
+          <div id="logged-in-view" class="hidden">
+            <div class="user-card">
+              <div class="user-avatar" id="user-initials">CW</div>
+              <div class="user-details">
+                <span id="user-name" class="user-name">Authenticated User</span>
+                <span id="user-email" class="user-email">user@cyberwatch.io</span>
+                <span id="user-role" class="user-role">USER</span>
+              </div>
+            </div>
+            <button id="logout-btn" class="btn-danger-sm">Sign Out</button>
+          </div>
+
+          <!-- When Logged Out -->
+          <div id="logged-out-view">
+            <p class="drawer-hint">Sign in with your CyberWatch credentials to run security scans and persist reports.</p>
+            <form id="login-form">
+              <div class="input-group">
+                <label for="login-email">Email Address</label>
+                <input type="email" id="login-email" placeholder="name@company.com" required autocomplete="email">
+              </div>
+              <div class="input-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+              </div>
+              <div id="login-error" class="form-error hidden"></div>
+              <button type="submit" id="login-submit-btn" class="btn-primary">Sign In</button>
+            </form>
+            <div class="drawer-or">or paste existing JWT token</div>
+            <div class="input-group">
+              <input type="text" id="manual-token-input" placeholder="eyJhbGciOiJIUzI1Ni..." spellcheck="false">
+              <button id="save-token-btn" class="btn-secondary-sm">Use Token</button>
+            </div>
+          </div>
+
+          <hr class="drawer-divider">
+
+          <!-- Config Section -->
+          <div class="config-section">
+            <h4>Backend Configuration</h4>
+            <div class="input-group">
+              <label for="config-api-url">API Base URL</label>
+              <input type="text" id="config-api-url" value="http://localhost:5000/api/v1">
+            </div>
+            <div class="input-group">
+              <label for="config-web-url">Web Frontend URL</label>
+              <input type="text" id="config-web-url" value="http://localhost:5173">
+            </div>
+            <button id="save-config-btn" class="btn-secondary-sm">Save URLs</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="dist/popup.js"></script>
+</body>
+</html>
